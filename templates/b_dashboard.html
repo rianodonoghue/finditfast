@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Business Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 900px; margin-bottom: 20px; }
+    .btn { padding: 6px 10px; cursor: pointer; }
+    table { border-collapse: collapse; width: 100%; max-width: 900px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { text-align: left; background: #f5f5f5; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    textarea { width: 100%; min-height: 80px; }
+    input[type="text"], input[type="date"], input[type="time"], select { width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Business Dashboard</h1>
+
+  <div class="card">
+    <p>
+      Signed in as <strong>{{ business.username }}</strong> ({{ business.email }})
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>Create a Post</h3>
+    <form method="POST" action="{{ url_for('create_post') }}">
+      <div class="row">
+        <div>
+          <label>Vendor Name</label><br>
+          <input type="text" name="vendor_name" value="{{ business.username }}" required>
+        </div>
+        <div>
+          <label>Date</label><br>
+          <input type="date" name="date" required>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Opening Time</label><br>
+          <input type="time" name="opening_time" required>
+        </div>
+        <div>
+          <label>Closing Time</label><br>
+          <input type="time" name="closing_time" required>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label>Category</label><br>
+          <select name="category" required>
+            <option value="Food">Food</option>
+            <option value="Coffee">Coffee</option>
+            <option value="Drinks">Drinks</option>
+            <option value="Retail">Retail</option>
+            <option value="Services">Services</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Description</label><br>
+        <textarea name="description" required placeholder="Describe your event, offer, or update..."></textarea>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">Post</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Set a Daily Special</h3>
+    <form method="POST" action="{{ url_for('create_or_update_special') }}">
+      <div class="row">
+        <div>
+          <label>Special Name</label><br>
+          <input type="text" name="special_name" required>
+        </div>
+        <div>
+          <label>Day of the Week</label><br>
+          <select name="weekday" required>
+            {% for name in weekday_names %}
+              <option value="{{ loop.index0 }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Description</label><br>
+        <textarea name="special_description" required placeholder="Describe your daily special..."></textarea>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">Save Special</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Your Daily Specials</h3>
+    {% if my_specials %}
+      <table>
+        <tr>
+          <th>Day</th>
+          <th>Special</th>
+          <th>Description</th>
+        </tr>
+        {% for s in my_specials %}
+          <tr>
+            <td>{{ weekday_names[s.weekday] }}</td>
+            <td>{{ s.special_name }}</td>
+            <td>{{ s.description }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No specials set yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Your Posts</h3>
+    {% if my_posts %}
+      <table>
+        <tr>
+          <th>Vendor</th>
+          <th>Date</th>
+          <th>Opening</th>
+          <th>Closing</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Created</th>
+        </tr>
+        {% for p in my_posts %}
+          <tr>
+            <td>{{ p.vendor_name }}</td>
+            <td>{{ p.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ p.opening_time.strftime('%H:%M') if p.opening_time else '-' }}</td>
+            <td>{{ p.closing_time.strftime('%H:%M') if p.closing_time else '-' }}</td>
+            <td>{{ p.category or 'Other' }}</td>
+            <td>{{ p.description }}</td>
+            <td>{{ p.created_at }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No posts yet.</p>
+    {% endif %}
+  </div>
+
+  <form method="POST" action="{{ url_for('logout') }}">
+    <button class="btn" type="submit">Sign Out</button>
+  </form>
+</body>
+</html>

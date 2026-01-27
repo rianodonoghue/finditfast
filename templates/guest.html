@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Guest Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 1000px; margin-bottom: 20px; }
+    .btn { padding: 6px 10px; cursor: pointer; }
+    table { border-collapse: collapse; width: 100%; max-width: 1000px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { text-align: left; background: #f5f5f5; }
+
+    .filters { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .filters label { margin-right: 6px; }
+    .filters select { padding: 6px; }
+
+    .rating-meta { color: #555; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Guest Dashboard</h1>
+
+  <div class="card">
+    <p>You are browsing as a <strong>Guest</strong>.</p>
+    <p>You can view vendor posts and ratings. To rate vendors and view daily specials please sign in or register.</p>
+  </div>
+
+  <div class="card">
+    <h3>Latest Vendor Posts</h3>
+
+    <form method="GET" action="{{ url_for('guest') }}" class="filters">
+      <div>
+        <label for="category">Filter by category:</label>
+        <select name="category" id="category" onchange="this.form.submit()">
+          <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>
+              {{ cat }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label for="sort">Sort by:</label>
+        <select name="sort" id="sort" onchange="this.form.submit()">
+          <option value="rating_desc" {% if sort_by == 'rating_desc' %}selected{% endif %}>Rating: High to Low</option>
+          <option value="rating_asc" {% if sort_by == 'rating_asc' %}selected{% endif %}>Rating: Low to High</option>
+          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Posts</option>
+        </select>
+      </div>
+
+      <noscript><button class="btn" type="submit">Apply</button></noscript>
+    </form>
+
+    {% if posts %}
+      <table>
+        <tr>
+          <th>Vendor</th>
+          <th>Date</th>
+          <th>Opening</th>
+          <th>Closing</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Created</th>
+        </tr>
+        {% for p in posts %}
+          <tr>
+            <td>{{ p.vendor_name }}</td>
+            <td>{{ p.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ p.opening_time.strftime('%H:%M') if p.opening_time else '-' }}</td>
+            <td>{{ p.closing_time.strftime('%H:%M') if p.closing_time else '-' }}</td>
+            <td>{{ p.category or 'Other' }}</td>
+            <td>{{ p.description }}</td>
+            <td>{{ p.created_at }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No posts yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Businesses using the website</h3>
+
+    {% if businesses %}
+      <table>
+        <tr>
+          <th style="width: 35%;">Business</th>
+          <th>Rating</th>
+        </tr>
+
+        {% for b in businesses %}
+          {% set stats = avg_by_business.get(b.id) %}
+          <tr>
+            <td><strong>{{ b.username }}</strong></td>
+            <td class="rating-meta">
+              {% if stats %}
+                <strong>{{ "%.1f"|format(stats["avg"]) }}</strong>/5
+                <span>({{ stats["count"] }} rating{{ "s" if stats["count"] != 1 else "" }})</span>
+              {% else %}
+                <span>No ratings yet</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p>No business accounts yet.</p>
+    {% endif %}
+  </div>
+
+  <form method="POST" action="{{ url_for('logout') }}">
+    <button class="btn" type="submit">Exit Guest / Back to Sign In</button>
+  </form>
+</body>
+</html>

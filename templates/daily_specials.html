@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Daily Specials</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 1000px; margin-bottom: 20px; }
+    .btn { padding: 6px 10px; cursor: pointer; }
+    h2 { margin-bottom: 8px; }
+    h3 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Daily Specials</h1>
+
+  <div class="card">
+    <p>
+      Viewing specials as <strong>{{ user.username }}</strong> (personal user).
+    </p>
+    <p>
+      <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </p>
+  </div>
+
+  <div class="card">
+    {% for idx in week_indices %}
+      <h3>{{ weekday_names[idx] }}</h3>
+      {% set specials = specials_by_day[idx] %}
+      {% if specials %}
+        <ul>
+          {% for s in specials %}
+            <li>
+              <strong>{{ s.vendor_name }}</strong> –
+              <strong>{{ s.special_name }}</strong>:
+              {{ s.description }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No specials listed for this day.</p>
+      {% endif %}
+      {% if not loop.last %}
+        <hr>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <form method="POST" action="{{ url_for('logout') }}">
+    <button class="btn" type="submit">Sign Out</button>
+  </form>
+</body>
+</html>
