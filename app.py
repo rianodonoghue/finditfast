@@ -22,16 +22,33 @@ app.secret_key = os.environ.get(
     "e9e88fc4019945639c3be48c2bdd242bc4bfc1791a4738aba143f65cab3b22c3"
 )
 
-# MySQL binds
-app.config["SQLALCHEMY_DATABASE_URI"] = (
+# -----------------------------
+# MySQL (Railway) configuration
+# -----------------------------
+
+MYSQL_URI = (
     f"mysql+pymysql://{os.environ['MYSQLUSER']}:"
     f"{os.environ['MYSQLPASSWORD']}@"
-    f"{os.environ['MYSQLHOST']}/"
+    f"{os.environ['MYSQLHOST']}:"
+    f"{os.environ['MYSQLPORT']}/"
     f"{os.environ['MYSQLDATABASE']}"
 )
+
+app.config["SQLALCHEMY_DATABASE_URI"] = MYSQL_URI
+
+# REQUIRED because you use __bind_key__
+app.config["SQLALCHEMY_BINDS"] = {
+    "users": MYSQL_URI,
+    "businesses": MYSQL_URI,
+}
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+# -----------------------------
+# Models
+# -----------------------------
 
 class User(db.Model):
     __bind_key__ = "users"
@@ -95,11 +112,15 @@ class VendorRating(db.Model):
         UniqueConstraint("user_id", "business_id", name="uq_user_business_rating"),
     )
 
-
+# -----------------------------
+# Create ALL tables safely
+# -----------------------------
 with app.app_context():
-    db.create_all(bind_key="users")
-    db.create_all(bind_key="businesses")
+    db.create_all()
 
+# -----------------------------
+# Auth helpers
+# -----------------------------
 
 def login_user(kind, obj=None):
     if kind == "admin":
@@ -170,6 +191,10 @@ def unique_identity_taken(email, username):
         or Business.query.filter((Business.email == email) | (Business.username == username)).first()
     )
 
+# =============================
+# ROUTES (UNCHANGED)
+# =============================
+
 #IS3313 assingment 2
 @app.route("/", methods=["GET", "POST"])
 def register():
@@ -200,7 +225,6 @@ def register():
         return redirect(url_for("register"))
 
     return render_template("register.html")
-
 
 @app.post("/login")
 def login():
