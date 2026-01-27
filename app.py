@@ -23,10 +23,12 @@ app.secret_key = os.environ.get(
 )
 
 # MySQL binds
-app.config["SQLALCHEMY_BINDS"] = {
-    "users":      "mysql+pymysql://root:rodod5050@127.0.0.1:3306/users_db",
-    "businesses": "mysql+pymysql://root:rodod5050@127.0.0.1:3306/businesses_db",
-}
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"mysql+pymysql://{os.environ['MYSQLUSER']}:"
+    f"{os.environ['MYSQLPASSWORD']}@"
+    f"{os.environ['MYSQLHOST']}/"
+    f"{os.environ['MYSQLDATABASE']}"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
