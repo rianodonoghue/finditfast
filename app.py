@@ -22,9 +22,8 @@ app.secret_key = os.environ.get(
     "e9e88fc4019945639c3be48c2bdd242bc4bfc1791a4738aba143f65cab3b22c3"
 )
 
-# -----------------------------
-# MySQL (Railway) configuration
-# -----------------------------
+
+# Railway configuration
 
 MYSQL_URI = (
     f"mysql+pymysql://{os.environ['MYSQLUSER']}:"
@@ -36,7 +35,7 @@ MYSQL_URI = (
 
 app.config["SQLALCHEMY_DATABASE_URI"] = MYSQL_URI
 
-# REQUIRED because you use __bind_key__
+
 app.config["SQLALCHEMY_BINDS"] = {
     "users": MYSQL_URI,
     "businesses": MYSQL_URI,
@@ -46,9 +45,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# -----------------------------
-# Models
-# -----------------------------
 
 class User(db.Model):
     __bind_key__ = "users"
@@ -112,15 +108,10 @@ class VendorRating(db.Model):
         UniqueConstraint("user_id", "business_id", name="uq_user_business_rating"),
     )
 
-# -----------------------------
-# Create ALL tables safely
-# -----------------------------
+
 with app.app_context():
     db.create_all()
 
-# -----------------------------
-# Auth helpers
-# -----------------------------
 
 def login_user(kind, obj=None):
     if kind == "admin":
@@ -191,9 +182,6 @@ def unique_identity_taken(email, username):
         or Business.query.filter((Business.email == email) | (Business.username == username)).first()
     )
 
-# =============================
-# ROUTES (UNCHANGED)
-# =============================
 
 #IS3313 assingment 2
 @app.route("/", methods=["GET", "POST"])
@@ -355,6 +343,7 @@ def dashboard():
 
     selected_category = request.args.get("category", "all")
     sort_by = request.args.get("sort", "rating_desc")
+    search_query = request.args.get("search", "").strip()
 
     rating_rows = (
         db.session.query(
@@ -405,7 +394,10 @@ def dashboard():
     raw_cats = db.session.query(Post.category).distinct().all()
     categories = sorted({c[0] for c in raw_cats if c[0]})
 
-    businesses = Business.query.all()
+    if search_query:
+        businesses = Business.query.filter(Business.username.ilike(f"%{search_query}%")).all()
+    else:
+        businesses = Business.query.all()
 
     def business_avg(biz):
         s = avg_by_business.get(biz.id)
@@ -431,6 +423,8 @@ def dashboard():
         businesses=businesses,
         avg_by_business=avg_by_business,
         my_rating_by_business=my_rating_by_business,
+        search_query=search_query,
+
     )
 
 #Python Flask Tutuorial 8
@@ -511,6 +505,27 @@ def b_dashboard():
         my_specials=my_specials,
         weekday_names=WEEKDAY_NAMES,
     )
+
+@app.get("/business/<int:business_id>")
+@require(kind="personal")
+def view_business(business_id):
+    business = db.session.get(Business, business_id)
+    if not business:
+        abort(404)
+
+    posts = (
+        Post.query
+        .filter_by(business_id=business.id)
+        .order_by(Post.date.desc(), Post.created_at.desc())
+        .all()
+    )
+
+    return render_template(
+        "business_posts.html",
+        business=business,
+        posts=posts,
+    )
+
 
 #IS3312 Project Phase 1
 @app.post("/b/post")

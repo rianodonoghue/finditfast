@@ -22,6 +22,9 @@
     .filters { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
     .filters label { margin-right: 6px; }
     .filters select { padding: 6px; }
+
+    .search-bar { margin: 12px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .search-bar input { padding: 6px; width: 280px; max-width: 100%; }
   </style>
 </head>
 <body>
@@ -70,6 +73,9 @@
         </select>
       </div>
 
+      <!-- keep search query when filtering -->
+      <input type="hidden" name="search" value="{{ search_query or '' }}">
+
       <noscript><button class="btn" type="submit">Apply</button></noscript>
     </form>
 
@@ -104,6 +110,27 @@
   <div class="card">
     <h3>Businesses using the website</h3>
 
+    <!-- NEW: Search Businesses -->
+    <form method="GET" action="{{ url_for('dashboard') }}" class="search-bar">
+      <label for="search"><strong>Search:</strong></label>
+      <input
+        type="text"
+        id="search"
+        name="search"
+        placeholder="Search business name..."
+        value="{{ search_query or '' }}"
+      >
+
+      <!-- preserve current category + sort selections -->
+      <input type="hidden" name="category" value="{{ selected_category }}">
+      <input type="hidden" name="sort" value="{{ sort_by }}">
+
+      <button class="btn" type="submit">Search</button>
+      {% if search_query %}
+        <a class="btn" href="{{ url_for('dashboard', category=selected_category, sort=sort_by) }}">Clear</a>
+      {% endif %}
+    </form>
+
     {% if businesses %}
       <table>
         <tr>
@@ -116,7 +143,9 @@
           {% set myscore = my_rating_by_business.get(b.id) %}
           <tr>
             <td>
-              <strong>{{ b.username }}</strong>
+              <a href="{{ url_for('view_business', business_id=b.id) }}">
+                <strong>{{ b.username }}</strong>
+              </a>
             </td>
             <td>
               <div class="rating-row">
@@ -148,7 +177,7 @@
         {% endfor %}
       </table>
     {% else %}
-      <p>No business accounts yet.</p>
+      <p>No business accounts found.</p>
     {% endif %}
   </div>
 
