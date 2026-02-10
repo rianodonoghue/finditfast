@@ -667,6 +667,10 @@ def dbinfo():
         "note": "Using MySQL (users_db, businesses_db) via SQLAlchemy binds.",
     })
 
+@app.get("/__version")
+def __version():
+    return "DEPLOY CHECK: business route added"
+
 
 if __name__ == "__main__":
     app.run(debug=True)
