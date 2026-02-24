@@ -1,110 +1,222 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Panel — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="bar">
-    <h1>Admin Panel</h1>
-    <form method="POST" action="{{ url_for('logout') }}">
-      <button class="btn" type="submit">Sign Out</button>
-    </form>
-  </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for cat, msg in messages %}
-        <div class="flash {{ cat }}">{{ msg }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+  <!-- ── Navigation ── -->
+  <nav class="nav-dark">
+    <div class="nav-brand">
+      <div class="nav-logo">🛍️</div>
+      <span class="nav-title">Find<span>It</span>Fast</span>
+      <span class="nav-chip admin">Admin</span>
+    </div>
+    <div class="nav-end">
+      <form method="POST" action="{{ url_for('logout') }}" style="margin:0">
+        <button class="btn btn-ghost" type="submit">Sign Out</button>
+      </form>
+    </div>
+  </nav>
 
-  <h2>Personal Accounts</h2>
-  <table>
-    <tr><th>ID</th><th>Email</th><th>Username</th><th>Verified</th><th>Actions</th></tr>
-    {% for u in users %}
-      <tr>
-        <td>{{ u.id }}</td>
-        <td>{{ u.email }}</td>
-        <td>{{ u.username }}</td>
-        <td>
-          {% if u.verified %}
-            <span class="pill ok">Verified</span>
-          {% else %}
-            <span class="pill no">Not verified</span>
-          {% endif %}
-        </td>
-        <td>
-          {% if not u.verified %}
-            <form class="inline" method="POST" action="{{ url_for('verify', kind='personal', item_id=u.id) }}">
-              <button class="btn" type="submit">Verify</button>
-            </form>
-          {% endif %}
-          <form class="inline" method="POST" action="{{ url_for('delete', kind='personal', item_id=u.id) }}">
-            <button class="btn" type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-    {% else %}
-      <tr><td colspan="5">No personal accounts yet.</td></tr>
-    {% endfor %}
-  </table>
+  <div class="page">
 
-  <h2>Business Accounts</h2>
-  <table>
-    <tr><th>ID</th><th>Email</th><th>Username</th><th>Verified</th><th>Actions</th></tr>
-    {% for b in businesses %}
-      <tr>
-        <td>{{ b.id }}</td>
-        <td>{{ b.email }}</td>
-        <td>{{ b.username }}</td>
-        <td>
-          {% if b.verified %}
-            <span class="pill ok">Verified</span>
-          {% else %}
-            <span class="pill no">Not verified</span>
-          {% endif %}
-        </td>
-        <td>
-          {% if not b.verified %}
-            <form class="inline" method="POST" action="{{ url_for('verify', kind='business', item_id=b.id) }}">
-              <button class="btn" type="submit">Verify</button>
-            </form>
-          {% endif %}
-          <form class="inline" method="POST" action="{{ url_for('delete', kind='business', item_id=b.id) }}">
-            <button class="btn" type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-    {% else %}
-      <tr><td colspan="5">No business accounts yet.</td></tr>
-    {% endfor %}
-  </table>
+    <!-- ── Flash messages ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes animate">
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
-  <h2>Vendor Posts</h2>
-  <table>
-    <tr><th>ID</th><th>Vendor</th><th>Date</th><th>Opening</th><th>Closing</th><th>Description</th><th>Created</th><th>Actions</th></tr>
-    {% for p in posts %}
-      <tr>
-        <td>{{ p.id }}</td>
-        <td>{{ p.vendor_name }}</td>
-        <td>{{ p.date.strftime('%Y-%m-%d') }}</td>
-        <td>{{ p.opening_time.strftime('%H:%M') if p.opening_time else '-' }}</td>
-        <td>{{ p.closing_time.strftime('%H:%M') if p.closing_time else '-' }}</td>
-        <td>{{ p.description }}</td>
-        <td>{{ p.created_at }}</td>
-        <td>
-          <form class="inline" method="POST" action="{{ url_for('admin_delete_post', post_id=p.id) }}">
-            <button class="btn" type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-    {% else %}
-      <tr><td colspan="8">No posts yet.</td></tr>
-    {% endfor %}
-  </table>
+    <!-- ── Page header ── -->
+    <div class="page-header animate">
+      <h2>Admin Panel</h2>
+      <p>Manage users, businesses and posts</p>
+    </div>
+
+    <!-- ── Stat cards ── -->
+    <div class="stat-row animate animate-d1">
+      <div class="stat-card">
+        <div class="stat-number">{{ users|length }}</div>
+        <div class="stat-label">Personal Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ businesses|length }}</div>
+        <div class="stat-label">Businesses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ posts|length }}</div>
+        <div class="stat-label">Posts</div>
+      </div>
+    </div>
+
+    <!-- ── Personal Accounts ── -->
+    <div class="card animate animate-d1">
+      <div class="card-title">
+        <span class="card-icon">👤</span>
+        Personal Accounts
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Username</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td class="id-col">#{{ u.id }}</td>
+                <td>{{ u.email }}</td>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>
+                  {% if u.verified %}
+                    <span class="badge badge-green">✓ Verified</span>
+                  {% else %}
+                    <span class="badge badge-red">Unverified</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-group">
+                    {% if not u.verified %}
+                      <form method="POST" action="{{ url_for('verify', kind='personal', item_id=u.id) }}" style="margin:0">
+                        <button class="btn btn-success btn-sm" type="submit">✓ Verify</button>
+                      </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('delete', kind='personal', item_id=u.id) }}" style="margin:0">
+                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr class="empty-row">
+                <td colspan="5">No personal accounts yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Business Accounts ── -->
+    <div class="card animate animate-d2">
+      <div class="card-title">
+        <span class="card-icon">🏪</span>
+        Business Accounts
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Username</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in businesses %}
+              <tr>
+                <td class="id-col">#{{ b.id }}</td>
+                <td>{{ b.email }}</td>
+                <td><strong>{{ b.username }}</strong></td>
+                <td>
+                  {% if b.verified %}
+                    <span class="badge badge-green">✓ Verified</span>
+                  {% else %}
+                    <span class="badge badge-red">Unverified</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-group">
+                    {% if not b.verified %}
+                      <form method="POST" action="{{ url_for('verify', kind='business', item_id=b.id) }}" style="margin:0">
+                        <button class="btn btn-success btn-sm" type="submit">✓ Verify</button>
+                      </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('delete', kind='business', item_id=b.id) }}" style="margin:0">
+                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr class="empty-row">
+                <td colspan="5">No business accounts yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Vendor Posts ── -->
+    <div class="card animate animate-d3">
+      <div class="card-title">
+        <span class="card-icon">📋</span>
+        Vendor Posts
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Vendor</th>
+              <th>Date</th>
+              <th>Hours</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Posted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in posts %}
+              <tr>
+                <td class="id-col">#{{ p.id }}</td>
+                <td><strong>{{ p.vendor_name }}</strong></td>
+                <td class="nowrap">{{ p.date.strftime('%d %b %Y') }}</td>
+                <td class="nowrap" style="font-size: 0.8rem;">
+                  {{ p.opening_time.strftime('%H:%M') if p.opening_time else '—' }}
+                  –
+                  {{ p.closing_time.strftime('%H:%M') if p.closing_time else '—' }}
+                </td>
+                <td><span class="badge badge-amber">{{ p.category or 'Other' }}</span></td>
+                <td class="truncate" title="{{ p.description }}">{{ p.description }}</td>
+                <td class="nowrap text-muted text-sm">
+                  {{ p.created_at.strftime('%d %b %y') if p.created_at else '—' }}
+                </td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin_delete_post', post_id=p.id) }}" style="margin:0">
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr class="empty-row">
+                <td colspan="8">No posts yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end .page -->
+
 </body>
 </html>
