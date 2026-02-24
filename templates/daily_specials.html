@@ -1,53 +1,70 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Daily Specials</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 1000px; margin-bottom: 20px; }
-    .btn { padding: 6px 10px; cursor: pointer; }
-    h2 { margin-bottom: 8px; }
-    h3 { margin-top: 16px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Daily Specials — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Daily Specials</h1>
 
-  <div class="card">
-    <p>
-      Viewing specials as <strong>{{ user.username }}</strong> (personal user).
-    </p>
-    <p>
-      <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
-    </p>
-  </div>
+  <!-- ── Navigation ── -->
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo">🛍️</div>
+      <span class="nav-title">Find<span>It</span>Fast</span>
+    </div>
+    <div class="nav-end">
+      <span class="nav-user">Hello, <strong>{{ user.username }}</strong></span>
+      <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">← Dashboard</a>
+      <form method="POST" action="{{ url_for('logout') }}" style="margin:0">
+        <button class="btn btn-ghost" type="submit">Sign Out</button>
+      </form>
+    </div>
+  </nav>
 
-  <div class="card">
+  <div class="page page-sm">
+
+    <!-- ── Page header ── -->
+    <div class="page-header animate">
+      <h2>⭐ Daily Specials</h2>
+      <p>See what vendors are offering each day of the week</p>
+    </div>
+
+    <!-- ── One block per day ── -->
     {% for idx in week_indices %}
-      <h3>{{ weekday_names[idx] }}</h3>
       {% set specials = specials_by_day[idx] %}
-      {% if specials %}
-        <ul>
-          {% for s in specials %}
-            <li>
-              <strong>{{ s.vendor_name }}</strong> –
-              <strong>{{ s.special_name }}</strong>:
-              {{ s.description }}
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No specials listed for this day.</p>
-      {% endif %}
-      {% if not loop.last %}
-        <hr>
-      {% endif %}
-    {% endfor %}
-  </div>
+      <div class="day-block animate" style="animation-delay: {{ loop.index0 * 0.05 }}s">
 
-  <form method="POST" action="{{ url_for('logout') }}">
-    <button class="btn" type="submit">Sign Out</button>
-  </form>
+        <div class="day-block-header">
+          <span class="day-name">{{ weekday_names[idx] }}</span>
+          <span class="day-count">
+            {{ specials|length }} special{{ 's' if specials|length != 1 else '' }}
+          </span>
+        </div>
+
+        {% if specials %}
+          <div class="day-specials">
+            {% for s in specials %}
+              <div class="special-card">
+                <div class="special-card-icon">🍽️</div>
+                <div>
+                  <div class="special-card-vendor">{{ s.vendor_name }}</div>
+                  <div class="special-card-name">{{ s.special_name }}</div>
+                  <div class="special-card-desc">{{ s.description }}</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="day-empty">No specials listed for this day.</div>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+
+  </div><!-- end .page -->
+
 </body>
 </html>

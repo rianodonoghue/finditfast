@@ -1,119 +1,152 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Guest Dashboard</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 1000px; margin-bottom: 20px; }
-    .btn { padding: 6px 10px; cursor: pointer; }
-    table { border-collapse: collapse; width: 100%; max-width: 1000px; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { text-align: left; background: #f5f5f5; }
-
-    .filters { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-    .filters label { margin-right: 6px; }
-    .filters select { padding: 6px; }
-
-    .rating-meta { color: #555; font-size: 14px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Guest — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Guest Dashboard</h1>
 
-  <div class="card">
-    <p>You are browsing as a <strong>Guest</strong>.</p>
-    <p>You can view vendor posts and ratings. To rate vendors and view daily specials please sign in or register.</p>
-  </div>
+  <!-- ── Navigation ── -->
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo">🛍️</div>
+      <span class="nav-title">Find<span>It</span>Fast</span>
+    </div>
+    <div class="nav-end">
+      <span class="guest-chip">👀 Guest</span>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('register') }}">Sign In / Register</a>
+      <form method="POST" action="{{ url_for('logout') }}" style="margin:0">
+        <button class="btn btn-ghost" type="submit">Exit</button>
+      </form>
+    </div>
+  </nav>
 
-  <div class="card">
-    <h3>Latest Vendor Posts</h3>
+  <div class="page">
 
-    <form method="GET" action="{{ url_for('guest') }}" class="filters">
-      <div>
-        <label for="category">Filter by category:</label>
-        <select name="category" id="category" onchange="this.form.submit()">
-          <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All</option>
-          {% for cat in categories %}
-            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>
-              {{ cat }}
-            </option>
+    <!-- ── Flash messages ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes animate">
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
           {% endfor %}
-        </select>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- ── Hero banner ── -->
+    <div class="hero animate">
+      <div class="hero-text">
+        <h2>Explore Local Vendors</h2>
+        <p>You're browsing as a guest. Sign in to rate vendors and access daily specials.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="{{ url_for('register') }}">🚀 Create Account</a>
+        <a class="btn-hero-outline" href="{{ url_for('register') }}">Sign In</a>
+      </div>
+    </div>
+
+    <!-- ── Latest Vendor Posts ── -->
+    <div class="card animate animate-d1">
+      <div class="card-title">
+        <span class="card-icon">📋</span>
+        Latest Posts
       </div>
 
-      <div>
-        <label for="sort">Sort by:</label>
-        <select name="sort" id="sort" onchange="this.form.submit()">
-          <option value="rating_desc" {% if sort_by == 'rating_desc' %}selected{% endif %}>Rating: High to Low</option>
-          <option value="rating_asc" {% if sort_by == 'rating_asc' %}selected{% endif %}>Rating: Low to High</option>
-          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Posts</option>
-        </select>
+      <!-- Filters toolbar -->
+      <form method="GET" action="{{ url_for('guest') }}">
+        <div class="toolbar">
+          <span class="toolbar-label">Category</span>
+          <select name="category" onchange="this.form.submit()">
+            <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+
+          <span class="toolbar-label">Sort By</span>
+          <select name="sort" onchange="this.form.submit()">
+            <option value="rating_desc" {% if sort_by == 'rating_desc' %}selected{% endif %}>⭐ Highest Rated</option>
+            <option value="rating_asc"  {% if sort_by == 'rating_asc'  %}selected{% endif %}>Rating: Low → High</option>
+            <option value="newest"      {% if sort_by == 'newest'      %}selected{% endif %}>🕐 Newest First</option>
+          </select>
+
+          <noscript><button class="btn btn-primary btn-sm" type="submit">Apply</button></noscript>
+        </div>
+      </form>
+
+      {% if posts %}
+        <div class="posts-grid">
+          {% for p in posts %}
+            <div class="post-card">
+              <div class="post-card-header">
+                <span class="post-vendor">{{ p.vendor_name }}</span>
+                <span class="badge badge-amber">{{ p.category or 'Other' }}</span>
+              </div>
+              <div class="post-meta">
+                <span class="post-meta-item">📅 {{ p.date.strftime('%d %b %Y') }}</span>
+                <span class="post-meta-item">
+                  🕐 {{ p.opening_time.strftime('%H:%M') if p.opening_time else '—' }}
+                  – {{ p.closing_time.strftime('%H:%M') if p.closing_time else '—' }}
+                </span>
+              </div>
+              <p class="post-desc">{{ p.description }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <p>No posts match your current filters.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Businesses ── -->
+    <div class="card animate animate-d2">
+      <div class="card-title">
+        <span class="card-icon">🏪</span>
+        Businesses
       </div>
 
-      <noscript><button class="btn" type="submit">Apply</button></noscript>
-    </form>
+      {% if businesses %}
+        <div class="vendor-list">
+          {% for b in businesses %}
+            {% set stats = avg_by_business.get(b.id) %}
+            <div class="vendor-row">
 
-    {% if posts %}
-      <table>
-        <tr>
-          <th>Vendor</th>
-          <th>Date</th>
-          <th>Opening</th>
-          <th>Closing</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Created</th>
-        </tr>
-        {% for p in posts %}
-          <tr>
-            <td>{{ p.vendor_name }}</td>
-            <td>{{ p.date.strftime('%Y-%m-%d') }}</td>
-            <td>{{ p.opening_time.strftime('%H:%M') if p.opening_time else '-' }}</td>
-            <td>{{ p.closing_time.strftime('%H:%M') if p.closing_time else '-' }}</td>
-            <td>{{ p.category or 'Other' }}</td>
-            <td>{{ p.description }}</td>
-            <td>{{ p.created_at }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No posts yet.</p>
-    {% endif %}
-  </div>
+              <!-- Business name + avatar -->
+              <div class="vendor-info">
+                <div class="vendor-avatar">{{ b.username[0]|upper }}</div>
+                <span class="vendor-name">{{ b.username }}</span>
+              </div>
 
-  <div class="card">
-    <h3>Businesses using the website</h3>
+              <!-- Rating + locked message -->
+              <div class="vendor-rating">
+                {% if stats %}
+                  <span class="rating-score">{{ "%.1f"|format(stats["avg"]) }}/5</span>
+                  <span class="rating-count">{{ stats["count"] }} rating{{ "s" if stats["count"] != 1 else "" }}</span>
+                {% else %}
+                  <span class="rating-count">No ratings yet</span>
+                {% endif %}
+                <span class="text-muted text-sm">🔒 Sign in to rate</span>
+              </div>
 
-    {% if businesses %}
-      <table>
-        <tr>
-          <th style="width: 35%;">Business</th>
-          <th>Rating</th>
-        </tr>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">🏪</div>
+          <p>No businesses registered yet.</p>
+        </div>
+      {% endif %}
+    </div>
 
-        {% for b in businesses %}
-          {% set stats = avg_by_business.get(b.id) %}
-          <tr>
-            <td><strong>{{ b.username }}</strong></td>
-            <td class="rating-meta">
-              {% if stats %}
-                <strong>{{ "%.1f"|format(stats["avg"]) }}</strong>/5
-                <span>({{ stats["count"] }} rating{{ "s" if stats["count"] != 1 else "" }})</span>
-              {% else %}
-                <span>No ratings yet</span>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No business accounts yet.</p>
-    {% endif %}
-  </div>
+  </div><!-- end .page -->
 
-  <form method="POST" action="{{ url_for('logout') }}">
-    <button class="btn" type="submit">Exit Guest / Back to Sign In</button>
-  </form>
 </body>
 </html>

@@ -1,187 +1,191 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Personal Dashboard</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 1000px; margin-bottom: 20px; }
-    .pill { padding: 2px 8px; border-radius: 999px; background: #eee; font-size: 12px; }
-    .ok { background: #d1fae5; }
-    .no { background: #fee2e2; }
-    .btn { padding: 6px 10px; cursor: pointer; }
-    table { border-collapse: collapse; width: 100%; max-width: 1000px; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { text-align: left; background: #f5f5f5; }
-    a.link-btn { display: inline-block; margin-top: 8px; }
-
-    .rating-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .rating-meta { color: #555; font-size: 14px; }
-    .rating-form select { padding: 6px; }
-
-    .filters { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-    .filters label { margin-right: 6px; }
-    .filters select { padding: 6px; }
-
-    .search-bar { margin: 12px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .search-bar input { padding: 6px; width: 280px; max-width: 100%; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Personal Dashboard — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Personal Dashboard</h1>
 
-  <div class="card">
-    <p>You are signed in as a <strong>Personal account</strong>.</p>
-    <p>
-      <strong>Username:</strong> {{ user.username }}<br>
-      <strong>Email:</strong> {{ user.email }}<br>
-      <strong>Status:</strong>
-      {% if user.verified %}
-        <span class="pill ok">Verified</span>
-      {% else %}
-        <span class="pill no">Not verified</span>
-      {% endif %}
-    </p>
-    <p>
-      <a class="link-btn" href="{{ url_for('daily_specials') }}">View Daily Specials</a>
-    </p>
-  </div>
+  <!-- ── Navigation ── -->
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo">🛍️</div>
+      <span class="nav-title">Find<span>It</span>Fast</span>
+    </div>
+    <div class="nav-end">
+      <span class="nav-user">Hello, <strong>{{ user.username }}</strong>
+        {% if user.verified %}
+          <span class="badge badge-green" style="margin-left: 4px;">✓ Verified</span>
+        {% else %}
+          <span class="badge badge-red" style="margin-left: 4px;">Unverified</span>
+        {% endif %}
+      </span>
+      <a class="btn btn-ghost" href="{{ url_for('daily_specials') }}">⭐ Daily Specials</a>
+      <form method="POST" action="{{ url_for('logout') }}" style="margin:0">
+        <button class="btn btn-ghost" type="submit">Sign Out</button>
+      </form>
+    </div>
+  </nav>
 
-  <div class="card">
-    <h3>Latest Vendor Posts</h3>
+  <div class="page">
 
-    <form method="GET" action="{{ url_for('dashboard') }}" class="filters">
-      <div>
-        <label for="category">Filter by category:</label>
-        <select name="category" id="category" onchange="this.form.submit()">
-          <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All</option>
-          {% for cat in categories %}
-            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>
-              {{ cat }}
-            </option>
+    <!-- ── Flash messages ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes animate">
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
           {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label for="sort">Sort by:</label>
-        <select name="sort" id="sort" onchange="this.form.submit()">
-          <option value="rating_desc" {% if sort_by == 'rating_desc' %}selected{% endif %}>Rating: High to Low</option>
-          <option value="rating_asc" {% if sort_by == 'rating_asc' %}selected{% endif %}>Rating: Low to High</option>
-          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Posts</option>
-        </select>
-      </div>
-
-
-      <input type="hidden" name="search" value="{{ search_query or '' }}">
-
-      <noscript><button class="btn" type="submit">Apply</button></noscript>
-    </form>
-
-    {% if posts %}
-      <table>
-        <tr>
-          <th>Vendor</th>
-          <th>Date</th>
-          <th>Opening</th>
-          <th>Closing</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Created</th>
-        </tr>
-        {% for p in posts %}
-          <tr>
-            <td>{{ p.vendor_name }}</td>
-            <td>{{ p.date.strftime('%Y-%m-%d') }}</td>
-            <td>{{ p.opening_time.strftime('%H:%M') if p.opening_time else '-' }}</td>
-            <td>{{ p.closing_time.strftime('%H:%M') if p.closing_time else '-' }}</td>
-            <td>{{ p.category or 'Other' }}</td>
-            <td>{{ p.description }}</td>
-            <td>{{ p.created_at }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No posts yet.</p>
-    {% endif %}
-  </div>
-
-  <div class="card">
-    <h3>Businesses using the website</h3>
-
-
-    <form method="GET" action="{{ url_for('dashboard') }}" class="search-bar">
-      <label for="search"><strong>Search:</strong></label>
-      <input
-        type="text"
-        id="search"
-        name="search"
-        placeholder="Search business name..."
-        value="{{ search_query or '' }}"
-      >
-
-
-      <input type="hidden" name="category" value="{{ selected_category }}">
-      <input type="hidden" name="sort" value="{{ sort_by }}">
-
-      <button class="btn" type="submit">Search</button>
-      {% if search_query %}
-        <a class="btn" href="{{ url_for('dashboard', category=selected_category, sort=sort_by) }}">Clear</a>
+        </div>
       {% endif %}
-    </form>
+    {% endwith %}
 
-    {% if businesses %}
-      <table>
-        <tr>
-          <th style="width: 35%;">Business</th>
-          <th>Rating</th>
-        </tr>
+    <!-- ── Page header ── -->
+    <div class="page-header animate">
+      <h2>Vendor Posts</h2>
+      <p>Browse what's happening at local vendors near you</p>
+    </div>
 
-        {% for b in businesses %}
-          {% set stats = avg_by_business.get(b.id) %}
-          {% set myscore = my_rating_by_business.get(b.id) %}
-          <tr>
-            <td>
-              <a href="{{ url_for('view_business', business_id=b.id) }}">
-                <strong>{{ b.username }}</strong>
-              </a>
-            </td>
-            <td>
-              <div class="rating-row">
-                <div class="rating-meta">
-                  {% if stats %}
-                    <strong>{{ "%.1f"|format(stats["avg"]) }}</strong>/5
-                    <span>({{ stats["count"] }} rating{{ "s" if stats["count"] != 1 else "" }})</span>
-                  {% else %}
-                    <span>No ratings yet</span>
-                  {% endif %}
-                </div>
+    <!-- ── Latest Vendor Posts ── -->
+    <div class="card animate animate-d1">
+      <div class="card-title">
+        <span class="card-icon">📋</span>
+        Latest Posts
+      </div>
 
-                <form class="rating-form" method="POST" action="{{ url_for('rate_vendor', business_id=b.id) }}">
-                  <label for="score-{{ b.id }}">Your rating:</label>
-                  <select id="score-{{ b.id }}" name="score">
-                    <option value="1" {% if myscore == 1 %}selected{% endif %}>1</option>
-                    <option value="2" {% if myscore == 2 %}selected{% endif %}>2</option>
-                    <option value="3" {% if myscore == 3 %}selected{% endif %}>3</option>
-                    <option value="4" {% if myscore == 4 %}selected{% endif %}>4</option>
-                    <option value="5" {% if myscore == 5 %}selected{% endif %}>5</option>
-                  </select>
-                  <button class="btn" type="submit">
+      <!-- Filters toolbar -->
+      <form method="GET" action="{{ url_for('dashboard') }}">
+        <div class="toolbar">
+          <span class="toolbar-label">Category</span>
+          <select name="category" onchange="this.form.submit()">
+            <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+
+          <span class="toolbar-label">Sort By</span>
+          <select name="sort" onchange="this.form.submit()">
+            <option value="rating_desc" {% if sort_by == 'rating_desc' %}selected{% endif %}>⭐ Highest Rated</option>
+            <option value="rating_asc"  {% if sort_by == 'rating_asc'  %}selected{% endif %}>Rating: Low → High</option>
+            <option value="newest"      {% if sort_by == 'newest'      %}selected{% endif %}>🕐 Newest First</option>
+          </select>
+
+          <input type="hidden" name="search" value="{{ search_query or '' }}">
+          <noscript><button class="btn btn-primary btn-sm" type="submit">Apply</button></noscript>
+        </div>
+      </form>
+
+      {% if posts %}
+        <div class="posts-grid">
+          {% for p in posts %}
+            <div class="post-card">
+              <div class="post-card-header">
+                <span class="post-vendor">{{ p.vendor_name }}</span>
+                <span class="badge badge-amber">{{ p.category or 'Other' }}</span>
+              </div>
+              <div class="post-meta">
+                <span class="post-meta-item">📅 {{ p.date.strftime('%d %b %Y') }}</span>
+                <span class="post-meta-item">
+                  🕐 {{ p.opening_time.strftime('%H:%M') if p.opening_time else '—' }}
+                  – {{ p.closing_time.strftime('%H:%M') if p.closing_time else '—' }}
+                </span>
+              </div>
+              <p class="post-desc">{{ p.description }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <p>No posts match your current filters.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Businesses ── -->
+    <div class="card animate animate-d2">
+      <div class="card-title">
+        <span class="card-icon">🏪</span>
+        Businesses
+      </div>
+
+      <!-- Search toolbar -->
+      <form method="GET" action="{{ url_for('dashboard') }}">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              class="search-input"
+              type="text"
+              name="search"
+              placeholder="Search business name..."
+              value="{{ search_query or '' }}"
+            >
+          </div>
+          <input type="hidden" name="category" value="{{ selected_category }}">
+          <input type="hidden" name="sort" value="{{ sort_by }}">
+          <button class="btn btn-primary btn-sm" type="submit">Search</button>
+          {% if search_query %}
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard', category=selected_category, sort=sort_by) }}">✕ Clear</a>
+          {% endif %}
+        </div>
+      </form>
+
+      {% if businesses %}
+        <div class="vendor-list">
+          {% for b in businesses %}
+            {% set stats = avg_by_business.get(b.id) %}
+            {% set myscore = my_rating_by_business.get(b.id) %}
+            <div class="vendor-row">
+
+              <!-- Business name + avatar -->
+              <div class="vendor-info">
+                <div class="vendor-avatar">{{ b.username[0]|upper }}</div>
+                <a class="vendor-name" href="{{ url_for('view_business', business_id=b.id) }}">
+                  {{ b.username }}
+                </a>
+              </div>
+
+              <!-- Rating display + star picker -->
+              <div class="vendor-rating">
+                {% if stats %}
+                  <span class="rating-score">{{ "%.1f"|format(stats["avg"]) }}/5</span>
+                  <span class="rating-count">{{ stats["count"] }} rating{{ "s" if stats["count"] != 1 else "" }}</span>
+                {% else %}
+                  <span class="rating-count">No ratings yet</span>
+                {% endif %}
+
+                <form class="rate-form" method="POST" action="{{ url_for('rate_vendor', business_id=b.id) }}">
+                  <span class="rate-label">Your rating</span>
+                  <div class="star-picker">
+                    {% for i in [5, 4, 3, 2, 1] %}
+                      <input type="radio" id="s{{ b.id }}-{{ i }}" name="score" value="{{ i }}"
+                        {% if myscore == i %}checked{% endif %}>
+                      <label for="s{{ b.id }}-{{ i }}">★</label>
+                    {% endfor %}
+                  </div>
+                  <button class="btn btn-primary btn-sm" type="submit">
                     {% if myscore %}Update{% else %}Rate{% endif %}
                   </button>
                 </form>
               </div>
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No business accounts found.</p>
-    {% endif %}
-  </div>
 
-  <form method="POST" action="{{ url_for('logout') }}">
-    <button class="btn" type="submit">Sign Out</button>
-  </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <p>No businesses found matching your search.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div><!-- end .page -->
+
 </body>
 </html>

@@ -1,11 +1,42 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <title>Success</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Account Created — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Account Created!</h1>
-  <p>Welcome, {{ username }}! You have registered a {{ kind }} account.</p>
-  <a href="{{ url_for('register') }}">Back</a>
+
+  <div class="auth-page">
+    <div class="card animate" style="max-width: 420px; width: 100%; text-align: center; padding: 48px 40px;">
+
+      <!-- Success icon -->
+      <div style="
+        width: 64px; height: 64px;
+        background: var(--green-subtle);
+        border: 1px solid var(--green-border);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.75rem;
+        margin: 0 auto var(--sp-5);
+      ">✓</div>
+
+      <h2 style="font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; margin-bottom: var(--sp-3);">
+        Account Created!
+      </h2>
+
+      <p style="color: var(--text-3); margin-bottom: var(--sp-6); line-height: 1.6;">
+        Welcome, <strong style="color: var(--text);">{{ username }}</strong>!
+        Your <strong style="color: var(--text);">{{ kind }}</strong> account is ready.
+        Sign in to get started.
+      </p>
+
+      <a class="btn btn-primary btn-full" href="{{ url_for('register') }}">Go to Sign In →</a>
+
+    </div>
+  </div>
+
 </body>
 </html>

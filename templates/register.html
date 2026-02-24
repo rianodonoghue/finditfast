@@ -1,75 +1,107 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Register / Sign in</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
-    h1, h2 { margin: 8px 0; }
-    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; }
-    .btn { padding: 6px 10px; cursor: pointer; }
-    .flash { padding: 10px; border-radius: 8px; margin: 8px 0; }
-    .flash.ok { background: #e8f5e9; }
-    .flash.err, .flash.warn { background: #ffebee; }
-    .muted { color: #666; font-size: 14px; }
-    .btn-link { display: inline-block; padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; text-decoration: none; color: inherit; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Register / Sign In — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Create Account or Sign In</h1>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for cat, msg in messages %}
-        <div class="flash {{ cat }}">{{ msg }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+  <div class="auth-page">
 
-  <div class="split">
-    <div class="card">
-      <h2>Register</h2>
-      <form method="POST" action="{{ url_for('register') }}">
-        <label><input type="radio" name="account_type" value="personal" required> Personal</label>
-        <label><input type="radio" name="account_type" value="business" required> Business</label>
-        <br><br>
-
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
-
-        <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
-
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
-
-        <button class="btn" type="submit">Register</button>
-      </form>
+    <!-- ── Brand ── -->
+    <div class="auth-brand animate">
+      <div class="auth-brand-logo">
+        <div class="auth-brand-icon">🛍️</div>
+        <h1>Find<span>It</span>Fast</h1>
+      </div>
+      <p>Discover local vendors, daily specials &amp; more</p>
     </div>
 
-    <div class="card">
-      <h2>Sign In</h2>
-      <form method="POST" action="{{ url_for('login') }}">
-        <label>Email or Username:</label><br>
-        <input type="text" name="identifier" required placeholder="email / username / admin"><br><br>
+    <!-- ── Flash messages ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes animate" style="width:100%;max-width:760px;">
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
-        <label>Password:</label><br>
-        <input type="password" name="login_password" required><br><br>
+    <!-- ── Register + Sign In cards ── -->
+    <div class="auth-grid animate animate-d1">
 
-        <button class="btn" type="submit">Sign In</button>
-      </form>
+      <!-- Register -->
+      <div class="card">
+        <div class="auth-card-title">Create Account</div>
+        <div class="auth-card-sub">Join the marketplace</div>
 
-      <hr style="border: none; border-top: 1px solid #eee; margin: 14px 0;">
+        <form method="POST" action="{{ url_for('register') }}">
 
+          <!-- Account type selector -->
+          <div class="type-selector">
+            <div class="type-option">
+              <input type="radio" name="account_type" id="type-personal" value="personal" required>
+              <label for="type-personal">
+                <span class="type-emoji">👤</span>
+                Personal
+              </label>
+            </div>
+            <div class="type-option">
+              <input type="radio" name="account_type" id="type-business" value="business" required>
+              <label for="type-business">
+                <span class="type-emoji">🏪</span>
+                Business
+              </label>
+            </div>
+          </div>
 
-      <p class="muted" style="margin: 0 0 8px 0;">Don't have an account?</p>
-      <a class="btn-link" href="{{ url_for('guest') }}">Continue as Guest</a>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input class="form-input" type="email" name="email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input class="form-input" type="text" name="username" placeholder="Choose a username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" name="password" placeholder="Create a password" required>
+          </div>
 
-      <p class="muted" style="margin-top: 10px;">
-        Guests can browse vendor posts and ratings, but cannot submit ratings.
-      </p>
-    </div>
-  </div>
+          <button class="btn btn-primary btn-full" type="submit">Create Account →</button>
+        </form>
+      </div>
+
+      <!-- Sign In -->
+      <div class="card">
+        <div class="auth-card-title">Welcome Back</div>
+        <div class="auth-card-sub">Sign in to continue</div>
+
+        <form method="POST" action="{{ url_for('login') }}">
+          <div class="form-group">
+            <label class="form-label">Email or Username</label>
+            <input class="form-input" type="text" name="identifier" placeholder="email / username / admin" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" name="login_password" placeholder="Your password" required>
+          </div>
+          <button class="btn btn-primary btn-full" type="submit">Sign In →</button>
+        </form>
+
+        <div class="auth-divider">or</div>
+
+        <a class="btn btn-secondary btn-full" href="{{ url_for('guest') }}">👀 Continue as Guest</a>
+        <p class="auth-note">Guests can browse vendor posts and ratings, but cannot submit ratings.</p>
+      </div>
+
+    </div><!-- end .auth-grid -->
+
+  </div><!-- end .auth-page -->
+
 </body>
 </html>

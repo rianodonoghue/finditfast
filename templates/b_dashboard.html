@@ -1,156 +1,193 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Business Dashboard</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 900px; margin-bottom: 20px; }
-    .btn { padding: 6px 10px; cursor: pointer; }
-    table { border-collapse: collapse; width: 100%; max-width: 900px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { text-align: left; background: #f5f5f5; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    textarea { width: 100%; min-height: 80px; }
-    input[type="text"], input[type="date"], input[type="time"], select { width: 100%; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Business Dashboard — FindItFast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Business Dashboard</h1>
 
-  <div class="card">
-    <p>
-      Signed in as <strong>{{ business.username }}</strong> ({{ business.email }})
-    </p>
-  </div>
+  <!-- ── Navigation ── -->
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo">🛍️</div>
+      <span class="nav-title">Find<span>It</span>Fast</span>
+    </div>
+    <div class="nav-end">
+      <span class="nav-user">Signed in as <strong>{{ business.username }}</strong></span>
+      <span class="biz-header-chip">🏪 Business</span>
+      <form method="POST" action="{{ url_for('logout') }}" style="margin:0">
+        <button class="btn btn-ghost" type="submit">Sign Out</button>
+      </form>
+    </div>
+  </nav>
 
-  <div class="card">
-    <h3>Create a Post</h3>
-    <form method="POST" action="{{ url_for('create_post') }}">
-      <div class="row">
-        <div>
-          <label>Vendor Name</label><br>
-          <input type="text" name="vendor_name" value="{{ business.username }}" required>
-        </div>
-        <div>
-          <label>Date</label><br>
-          <input type="date" name="date" required>
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>Opening Time</label><br>
-          <input type="time" name="opening_time" required>
-        </div>
-        <div>
-          <label>Closing Time</label><br>
-          <input type="time" name="closing_time" required>
-        </div>
-      </div>
-      <div class="row" style="margin-top:12px;">
-        <div>
-          <label>Category</label><br>
-          <select name="category" required>
-            <option value="Food">Food</option>
-            <option value="Coffee">Coffee</option>
-            <option value="Drinks">Drinks</option>
-            <option value="Retail">Retail</option>
-            <option value="Services">Services</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-top:12px;">
-        <label>Description</label><br>
-        <textarea name="description" required placeholder="Describe your event, offer, or update..."></textarea>
-      </div>
-      <div style="margin-top:12px;">
-        <button class="btn" type="submit">Post</button>
-      </div>
-    </form>
-  </div>
+  <div class="page">
 
-  <div class="card">
-    <h3>Set a Daily Special</h3>
-    <form method="POST" action="{{ url_for('create_or_update_special') }}">
-      <div class="row">
-        <div>
-          <label>Special Name</label><br>
-          <input type="text" name="special_name" required>
+    <!-- ── Flash messages ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes animate">
+          {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
         </div>
-        <div>
-          <label>Day of the Week</label><br>
-          <select name="weekday" required>
-            {% for name in weekday_names %}
-              <option value="{{ loop.index0 }}">{{ name }}</option>
-            {% endfor %}
-          </select>
+      {% endif %}
+    {% endwith %}
+
+    <!-- ── Page header ── -->
+    <div class="page-header animate">
+      <h2>Business Dashboard</h2>
+      <p>{{ business.email }}</p>
+    </div>
+
+    <!-- ── Create Post + Set Daily Special (side by side) ── -->
+    <div class="dash-grid animate animate-d1">
+
+      <!-- Create a Post -->
+      <div class="card">
+        <div class="card-title">
+          <span class="card-icon">✏️</span>
+          Create a Post
         </div>
+        <form method="POST" action="{{ url_for('create_post') }}">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Vendor Name</label>
+              <input class="form-input" type="text" name="vendor_name" value="{{ business.username }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input class="form-input" type="date" name="date" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Opening Time</label>
+              <input class="form-input" type="time" name="opening_time" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Closing Time</label>
+              <input class="form-input" type="time" name="closing_time" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category" required>
+              <option value="Food">🍔 Food</option>
+              <option value="Coffee">☕ Coffee</option>
+              <option value="Drinks">🥤 Drinks</option>
+              <option value="Retail">🛒 Retail</option>
+              <option value="Services">🔧 Services</option>
+              <option value="Other">📦 Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" name="description" required placeholder="Describe your event, offer, or update..."></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">📢 Publish Post</button>
+        </form>
       </div>
-      <div style="margin-top:12px;">
-        <label>Description</label><br>
-        <textarea name="special_description" required placeholder="Describe your daily special..."></textarea>
+
+      <!-- Set a Daily Special -->
+      <div class="card">
+        <div class="card-title">
+          <span class="card-icon">⭐</span>
+          Set a Daily Special
+        </div>
+        <form method="POST" action="{{ url_for('create_or_update_special') }}">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Special Name</label>
+              <input class="form-input" type="text" name="special_name" required placeholder="e.g. Monday Madness">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Day of the Week</label>
+              <select class="form-select" name="weekday" required>
+                {% for name in weekday_names %}
+                  <option value="{{ loop.index0 }}">{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" name="special_description" required placeholder="Describe your daily special..."></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">💾 Save Special</button>
+        </form>
+
+        <!-- Current specials list -->
+        {% if my_specials %}
+          <div class="divider"></div>
+          <p class="text-muted text-sm" style="margin-bottom: var(--sp-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">Current Specials</p>
+          {% for s in my_specials %}
+            <div class="special-item">
+              <div class="special-day">
+                <span class="badge badge-green">{{ weekday_names[s.weekday] }}</span>
+              </div>
+              <div>
+                <div class="special-name">{{ s.special_name }}</div>
+                <div class="special-desc">{{ s.description }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
       </div>
-      <div style="margin-top:12px;">
-        <button class="btn" type="submit">Save Special</button>
+
+    </div><!-- end .dash-grid -->
+
+    <!-- ── Your Posts table ── -->
+    <div class="card animate animate-d2">
+      <div class="card-title">
+        <span class="card-icon">📋</span>
+        Your Posts
       </div>
-    </form>
-  </div>
+      {% if my_posts %}
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Date</th>
+                <th>Hours</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Posted</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in my_posts %}
+                <tr>
+                  <td><strong>{{ p.vendor_name }}</strong></td>
+                  <td class="nowrap">{{ p.date.strftime('%d %b %Y') }}</td>
+                  <td class="nowrap text-sm">
+                    {{ p.opening_time.strftime('%H:%M') if p.opening_time else '—' }}
+                    –
+                    {{ p.closing_time.strftime('%H:%M') if p.closing_time else '—' }}
+                  </td>
+                  <td><span class="badge badge-amber">{{ p.category or 'Other' }}</span></td>
+                  <td class="truncate" title="{{ p.description }}">{{ p.description }}</td>
+                  <td class="nowrap text-muted text-sm">
+                    {{ p.created_at.strftime('%d %b %y') if p.created_at else '—' }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">📝</div>
+          <p>No posts yet. Create your first one above!</p>
+        </div>
+      {% endif %}
+    </div>
 
-  <div class="card">
-    <h3>Your Daily Specials</h3>
-    {% if my_specials %}
-      <table>
-        <tr>
-          <th>Day</th>
-          <th>Special</th>
-          <th>Description</th>
-        </tr>
-        {% for s in my_specials %}
-          <tr>
-            <td>{{ weekday_names[s.weekday] }}</td>
-            <td>{{ s.special_name }}</td>
-            <td>{{ s.description }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No specials set yet.</p>
-    {% endif %}
-  </div>
+  </div><!-- end .page -->
 
-  <div class="card">
-    <h3>Your Posts</h3>
-    {% if my_posts %}
-      <table>
-        <tr>
-          <th>Vendor</th>
-          <th>Date</th>
-          <th>Opening</th>
-          <th>Closing</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Created</th>
-        </tr>
-        {% for p in my_posts %}
-          <tr>
-            <td>{{ p.vendor_name }}</td>
-            <td>{{ p.date.strftime('%Y-%m-%d') }}</td>
-            <td>{{ p.opening_time.strftime('%H:%M') if p.opening_time else '-' }}</td>
-            <td>{{ p.closing_time.strftime('%H:%M') if p.closing_time else '-' }}</td>
-            <td>{{ p.category or 'Other' }}</td>
-            <td>{{ p.description }}</td>
-            <td>{{ p.created_at }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No posts yet.</p>
-    {% endif %}
-  </div>
-
-  <form method="POST" action="{{ url_for('logout') }}">
-    <button class="btn" type="submit">Sign Out</button>
-  </form>
 </body>
 </html>
