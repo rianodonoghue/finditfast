@@ -183,7 +183,7 @@ def unique_identity_taken(email, username):
     )
 
 
-#IS3313 assingment 2
+#IS3312 assingment 1
 @app.route("/", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -336,6 +336,7 @@ def logout():
 
 
 # Digital Ocean - How To Query Tables and Paginate Data in Flask-SQLAlchemy
+# IS 3312 - assignment 2 for the search bar
 @app.get("/dashboard")
 @require(kind="personal")
 def dashboard():
@@ -505,7 +506,7 @@ def b_dashboard():
         my_specials=my_specials,
         weekday_names=WEEKDAY_NAMES,
     )
-
+#IS3312 - Assignment 2 for secial page for each different vendor clicked into
 @app.get("/business/<int:business_id>")
 @require(kind="personal")
 def view_business(business_id):

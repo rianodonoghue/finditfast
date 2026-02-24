@@ -50,7 +50,6 @@
   <div class="card">
     <h3>Latest Vendor Posts</h3>
 
-    <!-- UPDATED: Category filter + Sort by rating filter together -->
     <form method="GET" action="{{ url_for('dashboard') }}" class="filters">
       <div>
         <label for="category">Filter by category:</label>
@@ -73,7 +72,7 @@
         </select>
       </div>
 
-      <!-- keep search query when filtering -->
+
       <input type="hidden" name="search" value="{{ search_query or '' }}">
 
       <noscript><button class="btn" type="submit">Apply</button></noscript>
@@ -110,7 +109,7 @@
   <div class="card">
     <h3>Businesses using the website</h3>
 
-    <!-- NEW: Search Businesses -->
+
     <form method="GET" action="{{ url_for('dashboard') }}" class="search-bar">
       <label for="search"><strong>Search:</strong></label>
       <input
@@ -121,7 +120,7 @@
         value="{{ search_query or '' }}"
       >
 
-      <!-- preserve current category + sort selections -->
+
       <input type="hidden" name="category" value="{{ selected_category }}">
       <input type="hidden" name="sort" value="{{ sort_by }}">
 
