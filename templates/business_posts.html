@@ -35,8 +35,32 @@
       </div>
     </div>
 
+    <!-- ── Menu Image (NEW) ── -->
+    <div class="card animate animate-d1" style="margin-top: var(--sp-4);">
+      <div class="card-title">
+        <span class="card-icon">🍽️</span>
+        Menu
+      </div>
+
+      {% if business.menu_image %}
+        <img
+          src="{{ url_for('static', filename='uploads/' ~ business.menu_image) }}"
+          alt="{{ business.username }} menu"
+          style="max-width: 100%; border-radius: 14px;"
+        >
+        <p class="text-muted text-sm" style="margin-top: var(--sp-3);">
+          Uploaded by {{ business.username }}.
+        </p>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">🖼️</div>
+          <p>This business has not uploaded a menu image yet.</p>
+        </div>
+      {% endif %}
+    </div>
+
     <!-- ── Posts table ── -->
-    <div class="card animate animate-d1">
+    <div class="card animate animate-d2">
       <div class="card-title">
         <span class="card-icon">📋</span>
         Posts by {{ business.username }}

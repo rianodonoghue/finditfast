@@ -10,6 +10,10 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_, func, UniqueConstraint
 
+from werkzeug.utils import secure_filename
+import uuid
+
+
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "122360356"
 
@@ -22,6 +26,13 @@ app.secret_key = os.environ.get(
     "e9e88fc4019945639c3be48c2bdd242bc4bfc1791a4738aba143f65cab3b22c3"
 )
 
+UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Railway configuration
 
@@ -62,6 +73,7 @@ class Business(db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     verified = db.Column(db.Boolean, nullable=False, server_default="0")
+    menu_image = db.Column(db.String(255), nullable=True)
 
 
 class Post(db.Model):
@@ -213,6 +225,32 @@ def register():
         return redirect(url_for("register"))
 
     return render_template("register.html")
+
+@app.post("/b/menu-image")
+@require(kind="business")
+def upload_menu_image():
+    _, business = current_user()
+
+    file = request.files.get("menu_image")
+    if not file or file.filename == "":
+        flash("No file selected.", "err")
+        return redirect(url_for("b_dashboard"))
+
+    if not allowed_file(file.filename):
+        flash("Invalid file type.", "err")
+        return redirect(url_for("b_dashboard"))
+
+    safe_name = secure_filename(file.filename)
+    ext = safe_name.rsplit(".", 1)[1].lower()
+    unique_name = f"{business.id}_{uuid.uuid4().hex}.{ext}"
+
+    file.save(os.path.join(UPLOAD_FOLDER, unique_name))
+
+    business.menu_image = unique_name
+    db.session.commit()
+
+    flash("Menu image uploaded.", "ok")
+    return redirect(url_for("b_dashboard"))
 
 @app.post("/login")
 def login():
