@@ -707,21 +707,17 @@ def verify(kind, item_id):
 def delete_menu_image():
     _, business = current_user()
 
-    # If no image saved, nothing to delete
     if not business.menu_image:
         flash("No menu image to delete.", "warn")
         return redirect(url_for("b_dashboard"))
 
-    # Try to delete the file from disk (if it exists)
     try:
         path = os.path.join(UPLOAD_FOLDER, business.menu_image)
         if os.path.exists(path):
             os.remove(path)
     except Exception:
-        # Don’t crash the app if file deletion fails
         flash("Menu image removed from account, but file could not be deleted.", "warn")
 
-    # Remove reference from DB
     business.menu_image = None
     db.session.commit()
 
@@ -737,9 +733,8 @@ def business_delete_post(post_id):
     if not p:
         abort(404)
 
-    # Ownership check (IMPORTANT)
     if p.business_id != business.id:
-        abort(403)  # prevents deleting other businesses’ posts
+        abort(403)
 
     db.session.delete(p)
     db.session.commit()
@@ -755,7 +750,6 @@ def business_delete_special(special_id):
     if not s:
         abort(404)
 
-    # Ownership check (IMPORTANT)
     if s.business_id != business.id:
         abort(403)
 

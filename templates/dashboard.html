@@ -17,11 +17,7 @@
     </div>
     <div class="nav-end">
       <span class="nav-user">Hello, <strong>{{ user.username }}</strong>
-        {% if user.verified %}
-          <span class="badge badge-green" style="margin-left: 4px;">✓ Verified</span>
-        {% else %}
-          <span class="badge badge-red" style="margin-left: 4px;">Unverified</span>
-        {% endif %}
+
       </span>
       <a class="btn btn-ghost" href="{{ url_for('daily_specials') }}">⭐ Daily Specials</a>
       <form method="POST" action="{{ url_for('logout') }}" style="margin:0">

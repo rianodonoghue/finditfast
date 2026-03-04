@@ -81,20 +81,10 @@
                 <td class="id-col">#{{ u.id }}</td>
                 <td>{{ u.email }}</td>
                 <td><strong>{{ u.username }}</strong></td>
-                <td>
-                  {% if u.verified %}
-                    <span class="badge badge-green">✓ Verified</span>
-                  {% else %}
-                    <span class="badge badge-red">Unverified</span>
-                  {% endif %}
-                </td>
+
                 <td>
                   <div class="action-group">
-                    {% if not u.verified %}
-                      <form method="POST" action="{{ url_for('verify', kind='personal', item_id=u.id) }}" style="margin:0">
-                        <button class="btn btn-success btn-sm" type="submit">✓ Verify</button>
-                      </form>
-                    {% endif %}
+
                     <form method="POST" action="{{ url_for('delete', kind='personal', item_id=u.id) }}" style="margin:0">
                       <button class="btn btn-danger btn-sm" type="submit">Delete</button>
                     </form>
@@ -134,20 +124,10 @@
                 <td class="id-col">#{{ b.id }}</td>
                 <td>{{ b.email }}</td>
                 <td><strong>{{ b.username }}</strong></td>
-                <td>
-                  {% if b.verified %}
-                    <span class="badge badge-green">✓ Verified</span>
-                  {% else %}
-                    <span class="badge badge-red">Unverified</span>
-                  {% endif %}
-                </td>
+
                 <td>
                   <div class="action-group">
-                    {% if not b.verified %}
-                      <form method="POST" action="{{ url_for('verify', kind='business', item_id=b.id) }}" style="margin:0">
-                        <button class="btn btn-success btn-sm" type="submit">✓ Verify</button>
-                      </form>
-                    {% endif %}
+
                     <form method="POST" action="{{ url_for('delete', kind='business', item_id=b.id) }}" style="margin:0">
                       <button class="btn btn-danger btn-sm" type="submit">Delete</button>
                     </form>
