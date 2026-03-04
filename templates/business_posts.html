@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <!-- ── Menu Image (NEW) ── -->
+    <!-- ── Menu Image (click to enlarge) ── -->
     <div class="card animate animate-d1" style="margin-top: var(--sp-4);">
       <div class="card-title">
         <span class="card-icon">🍽️</span>
@@ -46,10 +46,11 @@
         <img
           src="{{ url_for('static', filename='uploads/' ~ business.menu_image) }}"
           alt="{{ business.username }} menu"
-          style="max-width: 100%; border-radius: 14px;"
+          class="menu-preview"
+          onclick="openMenuImage(this.src)"
         >
         <p class="text-muted text-sm" style="margin-top: var(--sp-3);">
-          Uploaded by {{ business.username }}.
+          Click the image to enlarge.
         </p>
       {% else %}
         <div class="empty-state">
@@ -107,6 +108,29 @@
     </div>
 
   </div><!-- end .page -->
+
+  <!-- Menu Image Viewer (overlay) -->
+  <div id="menuViewer" class="menu-viewer" onclick="closeMenuImage()">
+    <img id="menuViewerImg" alt="Menu image enlarged">
+  </div>
+
+  <script>
+    function openMenuImage(src) {
+      const viewer = document.getElementById("menuViewer");
+      const img = document.getElementById("menuViewerImg");
+      img.src = src;
+      viewer.style.display = "flex";
+    }
+
+    function closeMenuImage() {
+      document.getElementById("menuViewer").style.display = "none";
+    }
+
+    // Optional: press ESC to close
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeMenuImage();
+    });
+  </script>
 
 </body>
 </html>
