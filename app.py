@@ -29,6 +29,12 @@ app.secret_key = os.environ.get(
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
+# Ensure uploads folder exists and is a directory
+if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
+    raise RuntimeError(f"{UPLOAD_FOLDER} exists but is not a directory")
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 try:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 except FileExistsError:
