@@ -6,6 +6,52 @@
   <title>{{ business.username }} — FindItFast</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- Minimal CSS needed for the enlarge viewer -->
+  <style>
+    .menu-preview{
+      cursor: zoom-in;
+      border-radius: 14px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .menu-viewer{
+      display: none;              /* JS turns this on */
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.82);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+
+    .menu-viewer img{
+      max-width: 92vw;
+      max-height: 92vh;
+      border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.55);
+      cursor: zoom-out;
+    }
+
+    .menu-viewer .close-btn{
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(20,20,20,.55);
+      color: #fff;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -111,7 +157,8 @@
 
   <!-- Menu Image Viewer (overlay) -->
   <div id="menuViewer" class="menu-viewer" onclick="closeMenuImage()">
-    <img id="menuViewerImg" alt="Menu image enlarged">
+    <button class="close-btn" type="button" onclick="closeMenuImage(event)">×</button>
+    <img id="menuViewerImg" alt="Menu image enlarged" onclick="event.stopPropagation()">
   </div>
 
   <script>
@@ -122,7 +169,8 @@
       viewer.style.display = "flex";
     }
 
-    function closeMenuImage() {
+    function closeMenuImage(e) {
+      if (e) e.stopPropagation(); // prevents immediate close from bubbling clicks
       document.getElementById("menuViewer").style.display = "none";
     }
 
