@@ -10,15 +10,21 @@
   <!-- Minimal CSS needed for the enlarge viewer -->
   <style>
     .menu-preview{
-      cursor: zoom-in;
-      border-radius: 14px;
+      width: 320px;              /* makes preview small */
       max-width: 100%;
       height: auto;
+      cursor: zoom-in;
+      border-radius: 14px;
       display: block;
+      transition: transform .2s ease;
+    }
+
+    .menu-preview:hover{
+      transform: scale(1.03);
     }
 
     .menu-viewer{
-      display: none;              /* JS turns this on */
+      display: none;
       position: fixed;
       inset: 0;
       z-index: 9999;
@@ -53,6 +59,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- ── Navigation ── -->
@@ -153,7 +160,7 @@
 
     </div>
 
-  </div><!-- end .page -->
+  </div>
 
   <!-- Menu Image Viewer (overlay) -->
   <div id="menuViewer" class="menu-viewer" onclick="closeMenuImage()">
@@ -170,11 +177,10 @@
     }
 
     function closeMenuImage(e) {
-      if (e) e.stopPropagation(); // prevents immediate close from bubbling clicks
+      if (e) e.stopPropagation();
       document.getElementById("menuViewer").style.display = "none";
     }
 
-    // Optional: press ESC to close
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeMenuImage();
     });
